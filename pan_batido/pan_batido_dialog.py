@@ -68,6 +68,7 @@ class MarraquetaDialog(QDialog):
             spinbox = QSpinBox()
             slider = QSlider(Qt.Orientation.Horizontal)
             link_spinbox_slider(spinbox, slider)
+            spinbox.setValue(50)
             # link_spinbox_slider_checkbox(spinbox, slider, checkbox)
             weight_layout.addWidget(checkbox)
             weight_layout.addWidget(spinbox)

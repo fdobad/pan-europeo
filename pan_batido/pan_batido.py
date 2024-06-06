@@ -255,6 +255,12 @@ class Marraqueta:
                     lyr = self.lyr_data[dlg_row["i"]]
                     lyr_nodata = lyr["info"]["NoDataValue"]
                     # get data
+                    qprint(
+                        "griora",
+                        GRIORAS[dlg_row["resample_dropdown"].currentText()],
+                        "gdt",
+                        DATATYPES[data_type]["gdal"],
+                    )
                     lyr_data, srs = get_sampled_raster_data(
                         lyr["layer"].publicSource(),
                         extent,
@@ -294,7 +300,8 @@ class Marraqueta:
 
                         raise QgsException(f"Utility function at index:{ufdci} not implemented")
 
-                    qprint(f"{lyr['layer'].name()=} {np.histogram(new_data)=}")
+                    qprint(f"{lyr['layer'].name()=} {new_data.shape=}")
+                    # qprint(f"{lyr['layer'].name()=} {np.histogram(new_data)=}")
                     final_data[lyr_data != lyr_nodata] += weight / 100 * new_data[lyr_data != lyr_nodata]
 
             if not did_any:
@@ -323,6 +330,7 @@ def min_max_scaling(data, nodata, invert=False, dtype=None):
                 return np.uint16(65535 - ret_val)
             else:
                 return 1 - ret_val
+        qprint("min_max_scaling normal return", data.shape, np.any(data), level=Qgis.Critical)
         return ret_val
     else:
         return np.zeros_like(data)
@@ -357,7 +365,12 @@ def get_sampled_raster_data(raster_path, extent, resolution=(1920, 1080), griora
         ValueError: if the raster file could not be opened by gdal.Open
 
     Debug:
+
+        from .config import DATATYPES, GRIORAS, qprint
+        griora=0
+        gdt=7
         from osgeo import gdal
+        from osgeo.osr import SpatialReference
         raster_path = iface.activeLayer().publicSource()
         extent = iface.mapCanvas().extent()
         resolution = (20, 80)
@@ -389,7 +402,7 @@ def get_sampled_raster_data(raster_path, extent, resolution=(1920, 1080), griora
         buf_ysize=resolution[1],
         resample_alg=griora,
         buf_type=gdt,
-        callback=progress_callback,
+        # callback=progress_callback,
     )
     """
     ret_array = band1.ReadAsArray(
@@ -402,6 +415,8 @@ def get_sampled_raster_data(raster_path, extent, resolution=(1920, 1080), griora
     tmp_data  = ret_array
     final_data = tmp_data
     """
+    qprint(f"{data.shape=}, {data.dtype=}, {data.min()=}, {data.max()=}, {data.mean()=}, {data[0,0]=}")
+
     return data, srs
 
 
